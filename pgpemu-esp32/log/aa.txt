@@ -1,0 +1,412 @@
+entry 0x40080680
+I (29) boot: ESP-IDF v4.3.7-1-g3a71941503 2nd stage bootloader
+I (29) boot: compile time 14:57:53
+I (29) boot: chip revision: v3.1
+I (33) boot.esp32: SPI Speed      : 40MHz
+I (38) boot.esp32: SPI Mode       : DIO
+I (43) boot.esp32: SPI Flash Size : 2MB
+I (47) boot: Enabling RNG early entropy source...
+I (53) boot: Partition Table:
+I (56) boot: ## Label            Usage          Type ST Offset   Length
+I (63) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (71) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (78) boot:  2 factory          factory app      00 00 00010000 00100000
+I (86) boot: End of partition table
+I (90) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=23364h (144228) map
+I (151) esp_image: segment 1: paddr=0003338c vaddr=3ffbdb60 size=04518h ( 17688) load
+I (158) esp_image: segment 2: paddr=000378ac vaddr=40080000 size=0876ch ( 34668) load
+I (172) esp_image: segment 3: paddr=00040020 vaddr=400d0020 size=84f8ch (544652) map
+I (370) esp_image: segment 4: paddr=000c4fb4 vaddr=4008876c size=10db4h ( 69044) load
+I (411) boot: Loaded app from partition at offset 0x10000
+I (411) boot: Disabling RNG early entropy source...
+I (422) cpu_start: Pro cpu up.
+I (422) cpu_start: Starting app cpu, entry point is 0x40081354
+0x40081354: call_start_cpu1 at C:/Users/iach5/esp/esp-idf/components/esp_system/port/cpu_start.c:153
+
+I (0) cpu_start: App cpu up.
+I (439) cpu_start: Pro cpu start user code
+I (439) cpu_start: cpu freq: 160000000
+I (439) cpu_start: Application information:
+I (443) cpu_start: Project name:     gatt_server_service_table_demo
+I (450) cpu_start: App version:      9404711-dirty
+I (456) cpu_start: Compile time:     May 19 2024 14:57:33
+I (462) cpu_start: ELF file SHA256:  8d33f039d54d57e8...
+I (468) cpu_start: ESP-IDF:          v4.3.7-1-g3a71941503
+I (474) cpu_start: Min chip rev:     v0.0
+I (479) cpu_start: Max chip rev:     v3.99
+I (483) cpu_start: Chip rev:         v3.1
+I (488) heap_init: Initializing. RAM available for dynamic allocation:
+I (496) heap_init: At 3FFAFF10 len 000000F0 (0 KiB): DRAM
+I (501) heap_init: At 3FFB6388 len 00001C78 (7 KiB): DRAM
+I (508) heap_init: At 3FFB9A20 len 00004108 (16 KiB): DRAM
+I (514) heap_init: At 3FFC73F8 len 00018C08 (99 KiB): DRAM
+I (520) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM
+I (526) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM
+I (533) heap_init: At 40099520 len 00006AE0 (26 KiB): IRAM
+I (540) spi_flash: detected chip: generic
+I (544) spi_flash: flash io: dio
+W (548) spi_flash: Detected size(4096k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (562) cpu_start: Starting scheduler on PRO CPU.
+I (0) cpu_start: Starting scheduler on APP CPU.
+I (608) uart: queue free spaces: 20
+I (608) BUTTON: [button task start]
+I (608) BTDM_INIT: BT controller compile version [fa43201]
+I (608) BTDM_INIT: Bluetooth MAC: 98:b6:e9:12:39:d2
+I (618) PGPEMU: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+I (618) PGPEMU: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+I (628) PGPEMU: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+I (638) PGPEMU: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+I (638) PGPEMU: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+I (648) PGPEMU: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+I (658) PGPEMU: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+I (658) PGPEMU: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+I (668) PGPEMU: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+I (678) PGPEMU: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+I (678) PGPEMU: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+I (688) PGPEMU: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+I (698) PGPEMU: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+I (698) PGPEMU: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+I (708) PGPEMU: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+I (718) PGPEMU: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+I (718) PGPEMU: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+I (728) PGPEMU: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+I (738) PGPEMU: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+I (738) PGPEMU: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+I (748) PGPEMU: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+I (758) PGPEMU: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+I (758) PGPEMU: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+I (768) PGPEMU: 00 00 00 00 00 00 00 00 00 00
+I (778) phy_init: phy_version 4791,2c4672b,Dec 20 2023,16:06:06
+I (1188) PGPEMU: create  battery attribute table successfully, the number handle = 4
+
+I (1188) PGPEMU: create  led button attribute table successfully, the number handle = 12
+
+I (1198) PGPEMU: create  cert attribute table successfully, the number handle = 8
+
+I (1208) PGPEMU: SERVICE_START_EVT, status 0, service_handle 40
+I (1208) PGPEMU: SERVICE_START_EVT, status 0, service_handle 44
+I (1218) PGPEMU: SERVICE_START_EVT, status 0, service_handle 56
+I (2068) PGPEMU: advertising start successfully
+I (4578) PGPEMU: ESP_GATTS_CONNECT_EVT, conn_id = 0
+I (4578) PGPEMU: 78 84 06 ad 77 d8
+I (4928) PGPEMU: ESP_GATTS_MTU_EVT, MTU 500
+I (5198) PGPEMU: update connection params status = 0, min_int = 16, max_int = 32,conn_int = 24,latency = 0, timeout = 400
+I (5438) PGPEMU: ESP_GATTS_WRITE_EVT: CHAR_SFIDA_COMMANDS_CFG
+I (5448) PGPEMU: GATT_WRITE_EVT (state=0), handle = 61, value len = 2, value :
+I (5448) PGPEMU: DATA FROM APP
+I (5448) PGPEMU: 01 00
+I (5458) PGPEMU: monster0
+I (5458) PGPEMU: start CERT PAIRING len = 2
+I (5458) PGPEMU: notify enable
+E (5468) PGPEMU: unhandled event
+I (5468) PGPEMU: ESP_GATTS_CONF_EVT, status = 0
+I (5538) PGPEMU: ESP_GATTS_READ_EVT state=0 CHAR_SFIDA_TO_CENTRAL_VAL
+I (6158) PGPEMU: ESP_GATTS_WRITE_EVT: CHAR_CENTRAL_TO_SFIDA_VAL
+I (6158) PGPEMU: GATT_WRITE_EVT (state=0), handle = 58, value len = 20, value :
+I (6168) PGPEMU: DATA FROM APP
+I (6168) PGPEMU: 01 00 00 00 41 41 41 41 41 41 41 41 41 41 41 41
+I (6178) PGPEMU: 41 41 41 41
+I (6178) PGPEMU: step0
+I (6188) PGPEMU: Write CENTRAL TO SFIDA: state=0 len=20
+E (6188) PGPEMU: unhandled event
+I (6198) PGPEMU: ESP_GATTS_CONF_EVT, status = 0
+I (6248) PGPEMU: ESP_GATTS_READ_EVT state=1 CHAR_SFIDA_TO_CENTRAL_VAL
+I (6258) PGPEMU: DATA SENT TO APP
+I (6258) PGPEMU: 01 00 00 00 42 42 42 42 42 42 42 42 42 42 42 42
+I (6258) PGPEMU: 42 42 42 42 3c 94 b0 c7 9d 9b 6e 4e 7a 5a a7 ac
+I (6268) PGPEMU: 4a 9e 5a 2c 4c 1f 98 07 36 4d 77 d2 87 36 3a 51
+I (6278) PGPEMU: 7f 70 fe a6
+I (6528) PGPEMU: ESP_GATTS_WRITE_EVT: CHAR_CENTRAL_TO_SFIDA_VAL
+I (6528) PGPEMU: GATT_WRITE_EVT (state=1), handle = 58, value len = 52, value :
+I (6528) PGPEMU: DATA FROM APP
+I (6528) PGPEMU: 02 00 00 00 a0 1d 49 8c 22 3c 0f ec ea c4 ed 10
+I (6538) PGPEMU: f5 00 00 00 1f 5a ec 43 ac 37 e3 c3 6b f2 a2 a0
+I (6548) PGPEMU: be 34 b0 24 00 d6 93 0a 1d 55 a4 af cc 1a 07 43
+I (6548) PGPEMU: cd 6e af 4b
+I (6558) PGPEMU: step1
+I (6558) PGPEMU: Write CENTRAL TO SFIDA: state=1 len=52
+I (6568) PGPEMU: Received: 52
+I (6568) PGPEMU: CHAL 2:
+I (6568) PGPEMU: 65 9f d2 9c bf bf df ac da 47 2e 5b b5 6d 2f 63
+I (6578) PGPEMU: Enc nonce :
+I (6578) PGPEMU: c6 72 2c 85 3b bd 8d 89 09 85 26 f0 ed a8 e5 45
+I (6588) PGPEMU: Hash:
+I (6588) PGPEMU: c6 72 2c 85 3b bd 8d 89 09 85 26 f0 ed a8 e5 45
+I (6598) PGPEMU: Sending response
+I (6598) PGPEMU: 02 00 00 00 65 9f d2 9c bf bf df ac da 47 2e 5b
+I (6608) PGPEMU: b5 6d 2f 63
+E (6618) PGPEMU: unhandled event
+I (6618) PGPEMU: ESP_GATTS_CONF_EVT, status = 0
+I (6708) PGPEMU: ESP_GATTS_READ_EVT state=2 CHAR_SFIDA_TO_CENTRAL_VAL
+I (7098) PGPEMU: ESP_GATTS_WRITE_EVT: CHAR_CENTRAL_TO_SFIDA_VAL
+I (7098) PGPEMU: GATT_WRITE_EVT (state=2), handle = 58, value len = 52, value :
+I (7098) PGPEMU: DATA FROM APP
+I (7098) PGPEMU: 00 00 00 00 10 c1 22 ca a2 b9 44 bd 4f aa 22 8d
+I (7108) PGPEMU: 42 00 00 00 6f 14 3d 57 5a f3 e8 43 39 6e e8 75
+I (7118) PGPEMU: 78 e1 60 89 ab 93 35 5d 74 59 59 be 43 75 4b 4c
+I (7118) PGPEMU: 33 e5 9e 1c
+I (7128) PGPEMU: step2
+I (7128) PGPEMU: Write CENTRAL TO SFIDA: state=2 len=52
+I (7138) PGPEMU: Cert state==2 Received: 52
+I (7138) PGPEMU: CHAL 2:
+I (7148) PGPEMU: 50 6f 6b 65 6d 6f 6e 47 6f 6f 6f 6f 6f 6f 6f 6f
+I (7148) PGPEMU: Enc nonce :
+I (7158) PGPEMU: 3a 0f 53 1c 52 39 05 55 f2 9a 1c f8 e9 78 44 6d
+I (7158) PGPEMU: Hash:
+I (7168) PGPEMU: 3a 0f 53 1c 52 39 05 55 f2 9a 1c f8 e9 78 44 6d
+I (7168) PGPEMU: DEBUG:
+I (7178) PGPEMU: 00 00 00 00 50 6f 6b 65 6d 6f 6e 47 6f 6f 6f 6f
+I (7178) PGPEMU: 6f 6f 6f 6f
+I (7188) PGPEMU: ESP_GATTS_CONF_EVT, status = 0
+I (7248) PGPEMU: ESP_GATTS_READ_EVT state=6 BATTERY_SVC
+I (7298) PGPEMU: ESP_GATTS_READ_EVT state=6 CHAR_BATTERY_LEVEL_VAL
+
+
+
+**********************************************************************
+
+
+
+I (32588) PGPEMU: ESP_GATTS_WRITE_EVT: CHAR_LED_VAL
+I (32598) PGPEMU: GATT_WRITE_EVT (state=6), handle = 46, value len = 85, value :
+I (32598) PGPEMU: DATA FROM APP
+I (32598) PGPEMU: 00 00 00 1b 04 00 ff 02 00 80 08 00 ff 0a 00 80
+I (32608) PGPEMU: 04 00 ff 02 00 80 08 00 ff 0a 00 80 04 00 ff 02
+I (32618) PGPEMU: 00 80 08 00 ff 0a 00 80 04 00 ff 02 00 80 08 00
+I (32618) PGPEMU: ff 0a 00 80 04 00 ff 02 00 80 08 00 ff 0a 00 80
+I (32628) PGPEMU: 04 00 ff 02 00 80 08 00 ff 0a 00 80 40 00 88 ff
+I (32638) PGPEMU: 00 88 89 00 88
+I (32638) PGPEMU: pokemon6
+I (32638) PGPEMU: LED: Pattern Count=27 priority: 0
+I (32658) PGPEMU: *(4) #00000f
+I (32658) PGPEMU: *(2) #000000
+I (32658) PGPEMU: *(8) #00000f
+I (32658) PGPEMU: *(10) #000000
+I (32668) PGPEMU: *(4) #00000f
+I (32668) PGPEMU: *(2) #000000
+I (32668) PGPEMU: *(8) #00000f
+I (32678) PGPEMU: *(10) #000000
+I (32678) PGPEMU: *(4) #00000f
+I (32678) PGPEMU: *(2) #000000
+I (32688) PGPEMU: *(8) #00000f
+I (32688) PGPEMU: *(10) #000000
+I (32698) PGPEMU: *(4) #00000f
+I (32698) PGPEMU: *(2) #000000
+I (32698) PGPEMU: *(8) #00000f
+I (32708) PGPEMU: *(10) #000000
+I (32708) PGPEMU: *(4) #00000f
+I (32708) PGPEMU: *(2) #000000
+I (32718) PGPEMU: *(8) #00000f
+I (32718) PGPEMU: *(10) #000000
+I (32728) PGPEMU: *(4) #00000f
+I (32728) PGPEMU: *(2) #000000
+I (32728) PGPEMU: *(8) #00000f
+I (32738) PGPEMU: *(10) #000000
+I (32738) PGPEMU: *(64) #000008
+I (32738) PGPEMU: *(255) #000008
+I (32748) PGPEMU: *(137) #000008
+I (32748) PGPEMU: Sending push button
+I (32758) PGPEMU: look0
+I (32758) BUTTON: [auto push button]
+I (32758) PGPEMU: ESP_GATTS_WRITE_EVT: CHAR_BUTTON_CFG,   CHAR_UNKNOWN
+I (32768) PGPEMU: GATT_WRITE_EVT (state=6), handle = 49, value len = 2, value :
+I (32778) PGPEMU: DATA FROM APP
+I (32778) PGPEMU: 01 00
+I (32788) PGPEMU: pokemon7
+E (32788) PGPEMU: unhandled data: handle: 49
+E (32788) PGPEMU: handle: 56=CERT_SVC
+E (32798) PGPEMU: handle: 57=CHAR_CENTRAL_TO_SFIDA
+E (32798) PGPEMU: handle: 58=CHAR_CENTRAL_TO_SFIDA_VAL
+E (32808) PGPEMU: handle: 59=CHAR_SFIDA_COMMANDS
+E (32818) PGPEMU: handle: 60=CHAR_SFIDA_COMMANDS_VAL
+E (32818) PGPEMU: handle: 61=CHAR_SFIDA_COMMANDS_CFG
+E (32828) PGPEMU: handle: 62=CHAR_SFIDA_TO_CENTRAL
+E (32828) PGPEMU: handle: 63=CHAR_SFIDA_TO_CENTRAL_VAL
+I (32838) PGPEMU: ESP_GATTS_CONF_EVT, status = 0
+I (32888) PGPEMU: ESP_GATTS_WRITE_EVT: CHAR_LED_VAL
+I (32898) PGPEMU: GATT_WRITE_EVT (state=6), handle = 46, value len = 7, value :
+I (32898) PGPEMU: DATA FROM APP
+I (32898) PGPEMU: 00 00 00 01 0a 00 00
+I (32908) PGPEMU: pokemon6
+I (32908) PGPEMU: LED: Pattern Count=1 priority: 0
+I (32918) PGPEMU: *(10) #000000
+I (32918) PGPEMU: Sending push button
+I (32918) PGPEMU: look1
+I (32928) BUTTON: [auto push button]
+I (32928) PGPEMU: ESP_GATTS_CONF_EVT, status = 0
+I (33788) PGPEMU: ESP_GATTS_WRITE_EVT: CHAR_LED_VAL
+I (33788) PGPEMU: GATT_WRITE_EVT (state=6), handle = 46, value len = 31, value :
+I (33798) PGPEMU: DATA FROM APP
+I (33798) PGPEMU: 00 00 00 09 03 f0 80 03 0f f0 03 00 8f 03 f0 80
+I (33808) PGPEMU: 03 0f f0 03 00 8f 03 f0 80 03 0f f0 03 00 8f
+I (33808) PGPEMU: pokemon6
+I (33818) PGPEMU: LED: Pattern Count=9 priority: 0
+I (33818) PGPEMU: *(3) #000f00
+I (33828) PGPEMU: *(3) #0f0000
+I (33828) PGPEMU: *(3) #00000f
+I (33828) PGPEMU: *(3) #000f00
+I (33838) PGPEMU: *(3) #0f0000
+I (33838) PGPEMU: *(3) #00000f
+I (33848) PGPEMU: *(3) #000f00
+I (33848) PGPEMU: *(3) #0f0000
+I (33848) PGPEMU: *(3) #00000f
+I (33858) PGPEMU: Sending push button
+I (33858) PGPEMU: look2
+I (33858) BUTTON: [auto push button]
+I (33868) PGPEMU: ESP_GATTS_CONF_EVT, status = 0
+I (35588) PGPEMU: ESP_GATTS_WRITE_EVT: CHAR_LED_VAL
+I (35598) PGPEMU: GATT_WRITE_EVT (state=6), handle = 46, value len = 85, value :
+I (35598) PGPEMU: DATA FROM APP
+I (35598) PGPEMU: 00 00 00 1b 04 00 ff 02 00 80 08 00 ff 0a 00 80
+I (35608) PGPEMU: 04 00 ff 02 00 80 08 00 ff 0a 00 80 04 00 ff 02
+I (35618) PGPEMU: 00 80 08 00 ff 0a 00 80 04 00 ff 02 00 80 08 00
+I (35618) PGPEMU: ff 0a 00 80 04 00 ff 02 00 80 08 00 ff 0a 00 80
+I (35628) PGPEMU: 04 00 ff 02 00 80 08 00 ff 0a 00 80 40 00 88 ff
+I (35638) PGPEMU: 00 88 89 00 88
+I (35638) PGPEMU: pokemon6
+I (35638) PGPEMU: LED: Pattern Count=27 priority: 0
+I (35648) PGPEMU: *(4) #00000f
+I (35648) PGPEMU: *(2) #000000
+I (35658) PGPEMU: *(8) #00000f
+I (35658) PGPEMU: *(10) #000000
+I (35668) PGPEMU: *(4) #00000f
+I (35668) PGPEMU: *(2) #000000
+I (35668) PGPEMU: *(8) #00000f
+I (35678) PGPEMU: *(10) #000000
+I (35678) PGPEMU: *(4) #00000f
+I (35678) PGPEMU: *(2) #000000
+I (35688) PGPEMU: *(8) #00000f
+I (35688) PGPEMU: *(10) #000000
+I (35698) PGPEMU: *(4) #00000f
+I (35698) PGPEMU: *(2) #000000
+I (35698) PGPEMU: *(8) #00000f
+I (35708) PGPEMU: *(10) #000000
+I (35708) PGPEMU: *(4) #00000f
+I (35708) PGPEMU: *(2) #000000
+I (35718) PGPEMU: *(8) #00000f
+I (35718) PGPEMU: *(10) #000000
+I (35728) PGPEMU: *(4) #00000f
+I (35728) PGPEMU: *(2) #000000
+I (35728) PGPEMU: *(8) #00000f
+I (35738) PGPEMU: *(10) #000000
+I (35738) PGPEMU: *(64) #000008
+I (35738) PGPEMU: *(255) #000008
+I (35748) PGPEMU: *(137) #000008
+I (35748) PGPEMU: Sending push button
+I (35758) PGPEMU: look3
+I (35758) BUTTON: [auto push button]
+I (35768) PGPEMU: ESP_GATTS_CONF_EVT, status = 0
+I (35798) PGPEMU: ESP_GATTS_WRITE_EVT: CHAR_LED_VAL
+I (35808) PGPEMU: GATT_WRITE_EVT (state=6), handle = 46, value len = 7, value :
+I (35808) PGPEMU: DATA FROM APP
+I (35808) PGPEMU: 00 00 00 01 0a 00 00
+I (35818) PGPEMU: pokemon6
+I (35818) PGPEMU: LED: Pattern Count=1 priority: 0
+I (35828) PGPEMU: *(10) #000000
+I (35828) PGPEMU: Sending push button
+I (35828) PGPEMU: look4
+I (35838) BUTTON: [auto push button]
+I (35838) PGPEMU: ESP_GATTS_CONF_EVT, status = 0
+I (36818) PGPEMU: ESP_GATTS_WRITE_EVT: CHAR_LED_VAL
+I (36818) PGPEMU: GATT_WRITE_EVT (state=6), handle = 46, value len = 40, value :
+I (36828) PGPEMU: DATA FROM APP
+I (36828) PGPEMU: 00 00 00 0c 03 f0 80 03 0f f0 03 00 8f 03 f0 80
+I (36838) PGPEMU: 03 0f f0 03 00 8f 03 f0 80 03 0f f0 03 00 8f 03
+I (36838) PGPEMU: f0 80 03 0f f0 03 00 8f
+I (36848) PGPEMU: pokemon6
+I (36848) PGPEMU: LED: Pattern Count=12 priority: 0
+I (36858) PGPEMU: *(3) #000f00
+I (36858) PGPEMU: *(3) #0f0000
+I (36868) PGPEMU: *(3) #00000f
+I (36868) PGPEMU: *(3) #000f00
+I (36868) PGPEMU: *(3) #0f0000
+I (36878) PGPEMU: *(3) #00000f
+I (36878) PGPEMU: *(3) #000f00
+I (36878) PGPEMU: *(3) #0f0000
+I (36888) PGPEMU: *(3) #00000f
+I (36888) PGPEMU: *(3) #000f00
+I (36898) PGPEMU: *(3) #0f0000
+I (36898) PGPEMU: *(3) #00000f
+I (36898) PGPEMU: Sending push button
+I (36908) PGPEMU: look5
+I (36908) BUTTON: [auto push button]
+I (36918) PGPEMU: ESP_GATTS_CONF_EVT, status = 0
+I (38978) PGPEMU: ESP_GATTS_WRITE_EVT: CHAR_LED_VAL
+I (38988) PGPEMU: GATT_WRITE_EVT (state=6), handle = 46, value len = 85, value :
+I (38988) PGPEMU: DATA FROM APP
+I (38988) PGPEMU: 00 00 00 1b 04 00 ff 02 00 80 08 00 ff 0a 00 80
+I (38998) PGPEMU: 04 00 ff 02 00 80 08 00 ff 0a 00 80 04 00 ff 02
+I (39008) PGPEMU: 00 80 08 00 ff 0a 00 80 04 00 ff 02 00 80 08 00
+I (39008) PGPEMU: ff 0a 00 80 04 00 ff 02 00 80 08 00 ff 0a 00 80
+I (39018) PGPEMU: 04 00 ff 02 00 80 08 00 ff 0a 00 80 40 00 88 ff
+I (39028) PGPEMU: 00 88 89 00 88
+I (39028) PGPEMU: pokemon6
+I (39038) PGPEMU: LED: Pattern Count=27 priority: 0
+I (39038) PGPEMU: *(4) #00000f
+I (39038) PGPEMU: *(2) #000000
+I (39048) PGPEMU: *(8) #00000f
+I (39048) PGPEMU: *(10) #000000
+I (39058) PGPEMU: *(4) #00000f
+I (39058) PGPEMU: *(2) #000000
+I (39058) PGPEMU: *(8) #00000f
+I (39068) PGPEMU: *(10) #000000
+I (39068) PGPEMU: *(4) #00000f
+I (39068) PGPEMU: *(2) #000000
+I (39078) PGPEMU: *(8) #00000f
+I (39078) PGPEMU: *(10) #000000
+I (39088) PGPEMU: *(4) #00000f
+I (39088) PGPEMU: *(2) #000000
+I (39088) PGPEMU: *(8) #00000f
+I (39098) PGPEMU: *(10) #000000
+I (39098) PGPEMU: *(4) #00000f
+I (39098) PGPEMU: *(2) #000000
+I (39108) PGPEMU: *(8) #00000f
+I (39108) PGPEMU: *(10) #000000
+I (39118) PGPEMU: *(4) #00000f
+I (39118) PGPEMU: *(2) #000000
+I (39118) PGPEMU: *(8) #00000f
+I (39128) PGPEMU: *(10) #000000
+I (39128) PGPEMU: *(64) #000008
+I (39128) PGPEMU: *(255) #000008
+I (39138) PGPEMU: *(137) #000008
+I (39138) PGPEMU: Sending push button
+I (39148) PGPEMU: look6
+I (39148) BUTTON: [auto push button]
+I (39158) PGPEMU: ESP_GATTS_CONF_EVT, status = 0
+I (39188) PGPEMU: ESP_GATTS_WRITE_EVT: CHAR_LED_VAL
+I (39198) PGPEMU: GATT_WRITE_EVT (state=6), handle = 46, value len = 7, value :
+I (39198) PGPEMU: DATA FROM APP
+I (39198) PGPEMU: 00 00 00 01 0a 00 00
+I (39208) PGPEMU: pokemon6
+I (39208) PGPEMU: LED: Pattern Count=1 priority: 0
+I (39218) PGPEMU: *(10) #000000
+I (39218) PGPEMU: Sending push button
+I (39218) PGPEMU: look7
+I (39228) BUTTON: [auto push button]
+I (39228) PGPEMU: ESP_GATTS_CONF_EVT, status = 0
+I (40028) PGPEMU: ESP_GATTS_WRITE_EVT: CHAR_LED_VAL
+I (40028) PGPEMU: GATT_WRITE_EVT (state=6), handle = 46, value len = 31, value :
+I (40038) PGPEMU: DATA FROM APP
+I (40038) PGPEMU: 00 00 00 09 03 f0 80 03 0f f0 03 00 8f 03 f0 80
+I (40048) PGPEMU: 03 0f f0 03 00 8f 03 f0 80 03 0f f0 03 00 8f
+I (40048) PGPEMU: pokemon6
+I (40058) PGPEMU: LED: Pattern Count=9 priority: 0
+I (40058) PGPEMU: *(3) #000f00
+I (40068) PGPEMU: *(3) #0f0000
+I (40068) PGPEMU: *(3) #00000f
+I (40068) PGPEMU: *(3) #000f00
+I (40078) PGPEMU: *(3) #0f0000
+I (40078) PGPEMU: *(3) #00000f
+I (40088) PGPEMU: *(3) #000f00
+I (40088) PGPEMU: *(3) #0f0000
+I (40088) PGPEMU: *(3) #00000f
+I (40098) PGPEMU: Sending push button
+I (40098) PGPEMU: look8
+I (40098) BUTTON: [auto push button]
+I (40108) PGPEMU: ESP_GATTS_CONF_EVT, status = 0
+I (41698) uart_events: uart[0] event:
+I (41698) uart_events: [UART DATA]: 1
+I (41698) uart_events: [DATA EVT]:
+ W (52778) BT_HCI: hcif disc complete: hdl 0x0, rsn 0x13
+I (52778) PGPEMU: ESP_GATTS_DISCONNECT_EVT, reason = 19
+I (53638) PGPEMU: advertising start successfully

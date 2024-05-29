@@ -4,7 +4,11 @@
 #include "freertos/queue.h"
 #include "driver/uart.h"
 #include "esp32/aes.h"
+#include "oled.h"
 
+#define LCDTAG "DISPLAY"
+#define IMAGES 10
+SSD1306_t dev;
 #define EX_UART_NUM UART_NUM_0
 
 
@@ -366,7 +370,51 @@ static void generate_first_challenge()
     generate_chal_0(bt_mac, the_challenge, main_nonce, session_key, outer_nonce,
 		    (struct challenge_data *)cert_buffer);
 }
+void display_number(SSD1306_t *dev, int number) {
+    if (number < 0 || number >= IMAGES) {
+        ESP_LOGE(LCDTAG, "Invalid number: %d", number);
+        return;
+    }
 
+    uint8_t *buffer = (uint8_t *)malloc(8 * 128); // 8 page 128 pixel
+    if (buffer == NULL) {
+        ESP_LOGE(LCDTAG, "malloc failed");
+        return;
+    }
+
+    uint8_t *segmentImage = (uint8_t *)malloc(IMAGES * 8 * 32); // 10 image 8 page 32 pixel
+    if (segmentImage == NULL) {
+        ESP_LOGE(LCDTAG, "malloc failed");
+        free(buffer);
+        return;
+    }
+
+    ssd1306_clear_screen(dev, false);
+    ssd1306_bitmaps(dev, 0, 8, segmentDisplay[number], 32, 48, false);
+    vTaskDelay(200 / portTICK_PERIOD_MS);
+
+    // Get from internal buffer to local buffer
+    ssd1306_get_buffer(dev, buffer);
+
+    // Save from buffer to segmentImage
+    int segmentImageIndex = number * 256;
+    for (int page = 0; page < 8; page++) {
+        memcpy(&segmentImage[segmentImageIndex + page * 32], &buffer[page * 128], 32);
+    }
+
+    ssd1306_clear_screen(dev, false);
+    for (int page = 0; page < 8; page++) {
+        ssd1306_display_image(dev, page, 0, &segmentImage[page * 32], 32);
+        ssd1306_display_image(dev, page, 32, &segmentImage[page * 32], 32);
+        ssd1306_display_image(dev, page, 64, &segmentImage[page * 32], 32);
+        ssd1306_display_image(dev, page, 96, &segmentImage[page * 32], 32);
+        vTaskDelay(2);
+    }
+
+    free(buffer);
+    free(segmentImage);
+}
+int ble_event_counter = 0;
 static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param)
 {
     switch (event) {
@@ -387,6 +435,8 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
             if (param->adv_start_cmpl.status != ESP_BT_STATUS_SUCCESS) {
                 ESP_LOGE(GATTS_TABLE_TAG, "advertising start failed");
             }else{
+                ble_event_counter++; // 增加計數
+                display_number(&dev, ble_event_counter);
                 ESP_LOGI(GATTS_TABLE_TAG, "advertising start successfully");
             }
             break;
@@ -596,7 +646,6 @@ void handle_protocol(esp_gatt_if_t gatts_if,
 		break;
     }
 }
-
 void handle_led_notify_from_app(const uint8_t *buffer)
 {
 		int number_of_patterns = buffer[3] & 0x1f;
@@ -647,7 +696,96 @@ void pgp_exec_write_event_env(esp_gatt_if_t gatts_if, prepare_type_env_t *prepar
     }
     prepare_write_env->prepare_len = 0;
 }
+#include <stdbool.h>
 
+bool is_pokeStop(const uint8_t *value, uint16_t len) {
+    //偵測到 pokemon stop 會有的訊息
+    /*完整的寶可夢補給站封包訊息
+        00 00 00 09 03 f0 80 03 0f f0 03 00 8f 03 f0 80
+        03 0f f0 03 00 8f 03 f0 80 03 0f f0 03 00 8f
+    */
+    const uint8_t stopPattern[] = {0x03, 0x0f, 0xf0, 0x03, 0x00, 0x8f, 0x03, 0xf0, 0x80, 0x03, 0x0f, 0xf0, 0x03, 0x00, 0x8f};
+    if (len < 30) {
+        return false;
+    }
+    for(int i = 16; i < 30; i++) {
+        if(value[i]!=stopPattern[i-16])
+        {
+            ESP_LOGE(GATTS_TABLE_TAG,"not pokestop");
+            return false;
+        }
+    }
+    return true;
+
+}
+bool is_pokemono(const uint8_t *value, uint16_t len) {
+    //偵測到 pokemon 會有的特徵訊息
+    /*
+        偵測到寶可夢的訊息
+        00 00 00 0f 10 f0 f0 08 00 00 10 f0 f0 08 00 00
+        10 f0 f0 08 00 00 10 f0 f0 08 00 00 10 f0 f0 08
+        00 00 10 f0 f0 08 00 00 40 80 80 ff 80 80 89 80
+        80
+    */
+    const uint8_t pattern[] = {0x00, 0x00, 0x00, 0x0f, 0x10, 0xf0, 0xf0, 0x08, 0x00, 0x00, 0x10, 0xf0, 0xf0, 0x08, 0x00, 0x00,0x10, 0xf0, 0xf0, 0x08, 0x00, 0x00, 0x10, 0xf0, 0xf0, 0x08, 0x00, 0x00, 0x10, 0xf0, 0xf0, 0x08,0x00, 0x00, 0x10, 0xf0};
+    if (len < 49) {
+        ESP_LOGE(GATTS_TABLE_TAG,"is not pokemon ...LENERR");
+        return false;
+    }
+    for(int i = 0; i < 36; i++) {
+        ESP_LOGE(GATTS_TABLE_TAG,"+!%d",value[i]);
+        if(value[i]!=pattern[i])
+        {
+            ESP_LOGE(GATTS_TABLE_TAG,"not pokemon");
+            return false;
+        }
+    }
+    return true;
+
+}
+bool get_pokemon(const uint8_t *value, uint16_t len)
+{
+    //抓到 pokemon 會有的訊息
+    /*
+        00 00 00 18 03 88 f8 09 00 80 10 00 00 03 88 f8
+        09 00 80 10 00 00 03 88 f8 09 00 80 10 00 00 03
+        08 f0 03 f0 f0 03 00 8f 03 08 f0 03 f0 f0 03 00
+        8f 03 08 f0 03 f0 f0 03 00 8f 03 08 f0 03 f0 f0
+        03 00 8f 03 08 f0 03 f0 f0 03 00 8f
+    */
+    const uint8_t pattern[] = {0x00,0x00,0x00,0x18,0x03,0x88,0xf8,0x09,0x00,0x80,0x10,0x00,0x00,0x03,0x88,0xf8};
+    if (len < 64) {
+        ESP_LOGE(GATTS_TABLE_TAG,"not pokemon get LENERR");
+        return false;
+    }
+    for(int i = 0; i < 16; i++) {
+        ESP_LOGE(GATTS_TABLE_TAG,"+!%d",value[i]);
+        if(value[i]!=pattern[i])
+        {
+            ESP_LOGE(GATTS_TABLE_TAG,"not get pokemon");
+            return false;
+        }
+    }
+    return true;
+}
+bool pokemonEscape(const uint8_t *value, uint16_t len)
+{
+    //寶可夢逃跑會有的訊息，長度不一定。有時候會有多組一樣的內容重複在封包裡
+    //但結尾都是 01 0f f0 02 00 80
+
+    const uint8_t pattern[] = {0x01,0x0f,0xf0,0x02,0x00,0x80};
+    for(int i = 0; i < 6; i++) {
+        ESP_LOGE(GATTS_TABLE_TAG,"+!%d",value[i]);
+        if(value[len-i]!=pattern[i])
+        {
+            ESP_LOGE(GATTS_TABLE_TAG,"not pokemon escape");
+            return false;
+        }
+    }
+    return true;
+
+}
+bool detectpokemon = false;//是否偵測到寶可夢，如果是會進入偵測逃跑或抓取的封包
 static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param)
 {
     switch (event) {
@@ -702,6 +840,31 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
 			ESP_LOGI(GATTS_TABLE_TAG, "GATT_WRITE_EVT (state=%d), handle = %d, value len = %d, value :", cert_state, param->write.handle, param->write.len);
 			ESP_LOGI(GATTS_TABLE_TAG, "DATA FROM APP");
 			esp_log_buffer_hex(GATTS_TABLE_TAG, param->write.value, param->write.len);
+            //判斷轉 pokemon stop
+            if (is_pokeStop(param->write.value, param->write.len)) {
+                ESP_LOGI(GATTS_TABLE_TAG, "sttttttep");
+                detectpokemon = false;
+            }
+            else if(is_pokemono(param->write.value, param->write.len))
+            {
+                ESP_LOGI(GATTS_TABLE_TAG, "i see a pokemon");
+                detectpokemon = true;
+            }
+            else if (pokemonEscape(param->write.value, param->write.len) && detectpokemon) {
+                ESP_LOGI(GATTS_TABLE_TAG, "pokemon escape");
+                detectpokemon = false;
+            }
+            else if (get_pokemon(param->write.value, param->write.len) && detectpokemon) {
+                ESP_LOGI(GATTS_TABLE_TAG, "get pokemon");
+                detectpokemon = false;
+            }
+            else
+            {
+                //預期不會發生
+                ESP_LOGI(GATTS_TABLE_TAG, "nothing");
+            }
+
+
 
 			if (certificate_handle_table[IDX_CHAR_SFIDA_COMMANDS_CFG] == param->write.handle) {
 
@@ -735,7 +898,7 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
 				} else if (descr_value == 0x000) {
 					ESP_LOGI(GATTS_TABLE_TAG, "notify disable");
 				}
-			} else if (certificate_handle_table[IDX_CHAR_CENTRAL_TO_SFIDA_VAL] == param->write.handle) {
+			} else if (certificate_handle_table[IDX_CHAR_CENTRAL_TO_SFIDA_VAL] == param->write.handle) {//X
 				ESP_LOGI(GATTS_TABLE_TAG, "Write CENTRAL TO SFIDA: state=%d len=%d", cert_state, param->write.len);
 
 		                handle_protocol(gatts_if,
@@ -746,6 +909,8 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
 				handle_led_notify_from_app(param->write.value);
 				return;
 			} else {
+                //bag full
+                ESP_LOGI(GATTS_TABLE_TAG,"full");
 				ESP_LOGE(GATTS_TABLE_TAG, "unhandled data: handle: %d", param->write.handle);
 				for (int i =0; i < CERT_LAST_IDX; i++) {
 					ESP_LOGE(GATTS_TABLE_TAG, "handle: %d=%s",
