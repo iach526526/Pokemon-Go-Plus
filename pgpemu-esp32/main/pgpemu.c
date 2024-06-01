@@ -4,11 +4,12 @@
 #include "freertos/queue.h"
 #include "driver/uart.h"
 #include "esp32/aes.h"
-#include "oled.h"
+//LCD3306 use
+#include <string.h>
+#include "ssd1306.h"
+#include "font8x8_basic.h"
+#include <stdbool.h>
 
-#define LCDTAG "DISPLAY"
-#define IMAGES 10
-SSD1306_t dev;
 #define EX_UART_NUM UART_NUM_0
 
 
@@ -370,50 +371,6 @@ static void generate_first_challenge()
     generate_chal_0(bt_mac, the_challenge, main_nonce, session_key, outer_nonce,
 		    (struct challenge_data *)cert_buffer);
 }
-void display_number(SSD1306_t *dev, int number) {
-    if (number < 0 || number >= IMAGES) {
-        ESP_LOGE(LCDTAG, "Invalid number: %d", number);
-        return;
-    }
-
-    uint8_t *buffer = (uint8_t *)malloc(8 * 128); // 8 page 128 pixel
-    if (buffer == NULL) {
-        ESP_LOGE(LCDTAG, "malloc failed");
-        return;
-    }
-
-    uint8_t *segmentImage = (uint8_t *)malloc(IMAGES * 8 * 32); // 10 image 8 page 32 pixel
-    if (segmentImage == NULL) {
-        ESP_LOGE(LCDTAG, "malloc failed");
-        free(buffer);
-        return;
-    }
-
-    ssd1306_clear_screen(dev, false);
-    ssd1306_bitmaps(dev, 0, 8, segmentDisplay[number], 32, 48, false);
-    vTaskDelay(200 / portTICK_PERIOD_MS);
-
-    // Get from internal buffer to local buffer
-    ssd1306_get_buffer(dev, buffer);
-
-    // Save from buffer to segmentImage
-    int segmentImageIndex = number * 256;
-    for (int page = 0; page < 8; page++) {
-        memcpy(&segmentImage[segmentImageIndex + page * 32], &buffer[page * 128], 32);
-    }
-
-    ssd1306_clear_screen(dev, false);
-    for (int page = 0; page < 8; page++) {
-        ssd1306_display_image(dev, page, 0, &segmentImage[page * 32], 32);
-        ssd1306_display_image(dev, page, 32, &segmentImage[page * 32], 32);
-        ssd1306_display_image(dev, page, 64, &segmentImage[page * 32], 32);
-        ssd1306_display_image(dev, page, 96, &segmentImage[page * 32], 32);
-        vTaskDelay(2);
-    }
-
-    free(buffer);
-    free(segmentImage);
-}
 int ble_event_counter = 0;
 static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param)
 {
@@ -435,8 +392,8 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
             if (param->adv_start_cmpl.status != ESP_BT_STATUS_SUCCESS) {
                 ESP_LOGE(GATTS_TABLE_TAG, "advertising start failed");
             }else{
-                ble_event_counter++; // 增加計數
-                display_number(&dev, ble_event_counter);
+                ble_event_counter++; // 閒置時會自動廣播
+                // display_number(&dev, ble_event_counter);
                 ESP_LOGI(GATTS_TABLE_TAG, "advertising start successfully");
             }
             break;
@@ -696,7 +653,9 @@ void pgp_exec_write_event_env(esp_gatt_if_t gatts_if, prepare_type_env_t *prepar
     }
     prepare_write_env->prepare_len = 0;
 }
-#include <stdbool.h>
+//捕捉狀態變數
+int catchPokemon=0,pokemonStop =0,escape=0;
+bool fullItem=false,fullPokemon=false;
 
 bool is_pokeStop(const uint8_t *value, uint16_t len) {
     //偵測到 pokemon stop 會有的訊息
@@ -715,6 +674,8 @@ bool is_pokeStop(const uint8_t *value, uint16_t len) {
             return false;
         }
     }
+    pokemonStop++;
+    ESP_LOGE(GATTS_TABLE_TAG,"PGS count:%d",pokemonStop);
     return true;
 
 }
@@ -766,6 +727,7 @@ bool get_pokemon(const uint8_t *value, uint16_t len)
             return false;
         }
     }
+    catchPokemon++;
     return true;
 }
 bool pokemonEscape(const uint8_t *value, uint16_t len)
@@ -782,6 +744,41 @@ bool pokemonEscape(const uint8_t *value, uint16_t len)
             return false;
         }
     }
+    escape++;
+    return true;
+
+}
+bool pokeBagFull(const uint8_t *value, uint16_t len)
+{
+    //寶可夢盒子滿了會有的訊息
+    //00 00 00 01 18 0f f0
+    const uint8_t pattern[] = {0x00,0x00,0x00,0x01,0x18,0x0f,0xf0};
+    for(int i = 0; i < 7; i++) {
+        ESP_LOGE(GATTS_TABLE_TAG,"+!%d",value[i]);
+        if(value[i]!=pattern[i])
+        {
+            ESP_LOGE(GATTS_TABLE_TAG,"not pokemon bag full");
+            return false;
+        }
+    }
+    fullPokemon = true;
+    return true;
+
+}
+bool pokeItemFull(const uint8_t *value, uint16_t len)
+{
+    //寶可夢道具滿了會有的訊息
+    //00 00 00 01 10 ff ff
+    const uint8_t pattern[] = {0x00,0x00,0x00,0x01,0x10,0xff,0xff};
+    for(int i = 0; i < 7; i++) {
+        ESP_LOGE(GATTS_TABLE_TAG,"+!%d",value[i]);
+        if(value[i]!=pattern[i])
+        {
+            ESP_LOGE(GATTS_TABLE_TAG,"not pokemon item full");
+            return false;
+        }
+    }
+    fullItem=true;
     return true;
 
 }
@@ -850,20 +847,27 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
                 ESP_LOGI(GATTS_TABLE_TAG, "i see a pokemon");
                 detectpokemon = true;
             }
-            else if (pokemonEscape(param->write.value, param->write.len) && detectpokemon) {
+            else if (detectpokemon&& pokemonEscape(param->write.value, param->write.len)) {
                 ESP_LOGI(GATTS_TABLE_TAG, "pokemon escape");
                 detectpokemon = false;
             }
-            else if (get_pokemon(param->write.value, param->write.len) && detectpokemon) {
+            else if (detectpokemon && get_pokemon(param->write.value, param->write.len)) {
                 ESP_LOGI(GATTS_TABLE_TAG, "get pokemon");
                 detectpokemon = false;
             }
+            else if (detectpokemon && pokeBagFull(param->write.value, param->write.len)) {
+                ESP_LOGI(GATTS_TABLE_TAG, "pokemon bag full");
+                detectpokemon = false;
+            }
+            else if(pokeItemFull(param->write.value, param->write.len))
+            {
+                ESP_LOGI(GATTS_TABLE_TAG, "pokemon item full");
+            }
             else
             {
-                //預期不會發生
+                //其他封包，我也不知道做什麼用
                 ESP_LOGI(GATTS_TABLE_TAG, "nothing");
             }
-
 
 
 			if (certificate_handle_table[IDX_CHAR_SFIDA_COMMANDS_CFG] == param->write.handle) {
@@ -909,8 +913,6 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
 				handle_led_notify_from_app(param->write.value);
 				return;
 			} else {
-                //bag full
-                ESP_LOGI(GATTS_TABLE_TAG,"full");
 				ESP_LOGE(GATTS_TABLE_TAG, "unhandled data: handle: %d", param->write.handle);
 				for (int i =0; i < CERT_LAST_IDX; i++) {
 					ESP_LOGE(GATTS_TABLE_TAG, "handle: %d=%s",
@@ -1049,8 +1051,151 @@ static void gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_
     } while (0);
 }
 
+uint8_t pokemonBallImg[] ={
+		0xfc, 0x3f, 0xf0, 0x0f, 0xe0, 0x07, 0xc0, 0x03, 0x80, 0x01, 0x80, 0x01, 0x01, 0x80, 0x01, 0xc0,
+			0x01, 0x80, 0xfa, 0x1f, 0xfc, 0x3f, 0xff, 0xfd, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
+	};
+typedef enum {
+    ALIGN_LEFT,
+    ALIGN_CENTER,
+    ALIGN_RIGHT
+} text_align_t;
+
+void display_on(SSD1306_t *dev, int page, char *text, int text_len, bool invert, text_align_t align) {
+    if (page >= dev->_pages) return;
+
+    int _text_len = text_len;
+    if (_text_len > 16) _text_len = 16;
+
+    uint8_t seg = 0;
+
+    // 根据对齐方式计算起始位置
+    switch (align) {
+        case ALIGN_CENTER:
+            seg = (128 - (_text_len * 8)) / 2;
+            break;
+        case ALIGN_RIGHT:
+            seg = 128 - (_text_len * 8);
+            break;
+        case ALIGN_LEFT:
+        default:
+            seg = 0;
+            break;
+    }
+
+    uint8_t image[8];
+    for (uint8_t i = 0; i < _text_len; i++) {
+        memcpy(image, font8x8_basic_tr[(uint8_t)text[i]], 8);
+        if (invert) ssd1306_invert(image, 8);
+        if (dev->_flip) ssd1306_flip(image, 8);
+        ssd1306_display_image(dev, page, seg, image, 8);
+        seg = seg + 8;
+    }
+}
+#define SSD1306TAG "SSD1306"
+static void oled_task(void *pvParameters)
+{
+    ESP_LOGI(SSD1306TAG, "oled_task start");
+	SSD1306_t dev;
+
+#if CONFIG_I2C_INTERFACE
+	ESP_LOGI(SSD1306TAG, "INTERFACE is i2c");
+	ESP_LOGI(SSD1306TAG, "CONFIG_SDA_GPIO=%d",CONFIG_SDA_GPIO);
+	ESP_LOGI(SSD1306TAG, "CONFIG_SCL_GPIO=%d",CONFIG_SCL_GPIO);
+	ESP_LOGI(SSD1306TAG, "CONFIG_RESET_GPIO=%d",CONFIG_RESET_GPIO);
+	i2c_master_init(&dev, CONFIG_SDA_GPIO, CONFIG_SCL_GPIO, CONFIG_RESET_GPIO);
+#endif // CONFIG_I2C_INTERFACE
+
+#if CONFIG_SPI_INTERFACE
+	ESP_LOGI(SSD1306TAG, "INTERFACE is SPI");
+	ESP_LOGI(SSD1306TAG, "CONFIG_MOSI_GPIO=%d",CONFIG_MOSI_GPIO);
+	ESP_LOGI(SSD1306TAG, "CONFIG_SCLK_GPIO=%d",CONFIG_SCLK_GPIO);
+	ESP_LOGI(SSD1306TAG, "CONFIG_CS_GPIO=%d",CONFIG_CS_GPIO);
+	ESP_LOGI(SSD1306TAG, "CONFIG_DC_GPIO=%d",CONFIG_DC_GPIO);
+	ESP_LOGI(SSD1306TAG, "CONFIG_RESET_GPIO=%d",CONFIG_RESET_GPIO);
+	spi_master_init(&dev, CONFIG_MOSI_GPIO, CONFIG_SCLK_GPIO, CONFIG_CS_GPIO, CONFIG_DC_GPIO, CONFIG_RESET_GPIO);
+#endif // CONFIG_SPI_INTERFACE
+
+#if CONFIG_FLIP
+	dev._flip = true;
+	ESP_LOGW(SSD1306TAG, "Flip upside down");
+#endif
+
+#if CONFIG_SSD1306_128x64
+	ESP_LOGI(SSD1306TAG, "Panel is 128x64");
+	ssd1306_init(&dev, 128, 64);
+#endif // CONFIG_SSD1306_128x64
+#if CONFIG_SSD1306_128x32
+	ESP_LOGI(SSD1306TAG, "Panel is 128x32");
+	ssd1306_init(&dev, 128, 32);
+#endif // CONFIG_SSD1306_128x32
+
+	ssd1306_contrast(&dev, 0xff);
+ssd1306_clear_screen(&dev, false);
+#if CONFIG_SSD1306_128x64
+		ssd1306_display_text(&dev, 0, "POKEMON MASTER!", 15, false);
+#endif // CONFIG_SSD1306_128x64
+
+#if CONFIG_SSD1306_128x32
+		ssd1306_display_text(&dev, 0, "NOTHING is EVERYTHING", 21, false);
+#endif // CONFIG_SSD1306_128x32
+	while(1) {
 
 
+	    // 把變數和字串組合成狀態訊息
+	    char catchMSG[20];  // 确保这个数组足够大以容纳字符和数字
+	    snprintf(catchMSG, sizeof(catchMSG), "Catch  %4d" ,catchPokemon);
+	    char pokeStophMSG[20];
+	    snprintf(pokeStophMSG, sizeof(pokeStophMSG), "pokeStop%4d" ,pokemonStop);
+	    char escapeMSG[20];
+	    snprintf(escapeMSG, sizeof(escapeMSG), "  escape %4d" ,escape);
+
+        //顯示狀態
+	    text_align_t align = ALIGN_RIGHT;
+	    display_on(&dev, 2, catchMSG,strlen(catchMSG), false, align);
+	    display_on(&dev, 3, pokeStophMSG, strlen(pokeStophMSG), false, align);
+	    display_on(&dev, 4, escapeMSG, strlen(escapeMSG), false, align);
+		int xpos=0;
+		int ypos = 16;
+		// ESP_LOGD(SSD1306TAG, "width=%d xpos=%d", width, xpos);
+        //顯示圖片
+		ssd1306_bitmaps(&dev, xpos, ypos, pokemonBallImg, 16, 16, false);
+		vTaskDelay(3000 / portTICK_PERIOD_MS);
+
+        //向右滾動效果
+		for(int i=0;i<128;i++) {
+			ssd1306_wrap_arround(&dev, SCROLL_RIGHT, 2, 5, 0);
+		}
+        
+		if(fullItem)
+		{
+            for(int i=3;i>=0;i--)
+            {
+    			display_on(&dev, 7, " Item   Storage FULL",12, false, ALIGN_RIGHT);
+                vTaskDelay(2000 / portTICK_PERIOD_MS);
+                ssd1306_clear_line(&dev, 7,false);
+                vTaskDelay(2000 / portTICK_PERIOD_MS);
+            }
+		}
+        else
+        {ssd1306_clear_line(&dev, 7,false);}
+        
+
+        if(fullPokemon)
+        {
+            for(int i=3;i>=0;i--)
+            {
+    			display_on(&dev, 6, "Pokemon Storage FULL",20, false, ALIGN_RIGHT);
+                vTaskDelay(2000 / portTICK_PERIOD_MS);
+                ssd1306_clear_line(&dev, 6,false);
+                vTaskDelay(2000 / portTICK_PERIOD_MS);
+            }
+        }
+		else
+		{ssd1306_clear_line(&dev, 6,false);}
+		vTaskDelay(2000 / portTICK_PERIOD_MS);
+}
+}
 
 static void auto_button_task(void *pvParameters)
 {
@@ -1199,6 +1344,7 @@ void app_main()
     xTaskCreate(uart_event_task, "uart_event_task", 2048, NULL, 12, NULL);
 
     xTaskCreate(auto_button_task, "auto_button_task", 2048, NULL, 12, NULL);
+    xTaskCreate(oled_task, "oled_task", 4096, NULL, 5, NULL);
 
     ESP_ERROR_CHECK(esp_bt_controller_mem_release(ESP_BT_MODE_CLASSIC_BT));
 

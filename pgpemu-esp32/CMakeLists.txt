@@ -3,4 +3,5 @@
 cmake_minimum_required(VERSION 3.5)
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+set(EXTRA_COMPONENT_DIRS ./components/ssd1306)
 project(gatt_server_service_table_demo)
