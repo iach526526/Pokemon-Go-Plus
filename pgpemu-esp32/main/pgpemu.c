@@ -371,7 +371,7 @@ static void generate_first_challenge()
     generate_chal_0(bt_mac, the_challenge, main_nonce, session_key, outer_nonce,
 		    (struct challenge_data *)cert_buffer);
 }
-int ble_event_counter = 0;
+int idle = false;
 static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param)
 {
     switch (event) {
@@ -392,8 +392,7 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
             if (param->adv_start_cmpl.status != ESP_BT_STATUS_SUCCESS) {
                 ESP_LOGE(GATTS_TABLE_TAG, "advertising start failed");
             }else{
-                ble_event_counter++; // 閒置時會自動廣播
-                // display_number(&dev, ble_event_counter);
+                idle=true; // 閒置狀態，LED 顯示等待連接
                 ESP_LOGI(GATTS_TABLE_TAG, "advertising start successfully");
             }
             break;
@@ -654,6 +653,7 @@ void pgp_exec_write_event_env(esp_gatt_if_t gatts_if, prepare_type_env_t *prepar
     prepare_write_env->prepare_len = 0;
 }
 //捕捉狀態變數
+//counter for OLED display
 int catchPokemon=0,pokemonStop =0,escape=0;
 bool fullItem=false,fullPokemon=false;
 
@@ -670,12 +670,13 @@ bool is_pokeStop(const uint8_t *value, uint16_t len) {
     for(int i = 16; i < 30; i++) {
         if(value[i]!=stopPattern[i-16])
         {
-            ESP_LOGE(GATTS_TABLE_TAG,"not pokestop");
+            // ESP_LOGE(GATTS_TABLE_TAG,"not pokestop");//for debug
             return false;
         }
     }
     pokemonStop++;
     ESP_LOGE(GATTS_TABLE_TAG,"PGS count:%d",pokemonStop);
+    fullItem=false;//reset status
     return true;
 
 }
@@ -697,10 +698,11 @@ bool is_pokemono(const uint8_t *value, uint16_t len) {
         ESP_LOGE(GATTS_TABLE_TAG,"+!%d",value[i]);
         if(value[i]!=pattern[i])
         {
-            ESP_LOGE(GATTS_TABLE_TAG,"not pokemon");
+            // ESP_LOGE(GATTS_TABLE_TAG,"not pokemon");//for debug
             return false;
         }
     }
+    fullPokemon=false;//reset status
     return true;
 
 }
@@ -723,7 +725,7 @@ bool get_pokemon(const uint8_t *value, uint16_t len)
         ESP_LOGE(GATTS_TABLE_TAG,"+!%d",value[i]);
         if(value[i]!=pattern[i])
         {
-            ESP_LOGE(GATTS_TABLE_TAG,"not get pokemon");
+            // ESP_LOGE(GATTS_TABLE_TAG,"not get pokemon");//for debug
             return false;
         }
     }
@@ -732,15 +734,19 @@ bool get_pokemon(const uint8_t *value, uint16_t len)
 }
 bool pokemonEscape(const uint8_t *value, uint16_t len)
 {
-    //寶可夢逃跑會有的訊息，長度不一定。有時候會有多組一樣的內容重複在封包裡
-    //但結尾都是 01 0f f0 02 00 80
-
-    const uint8_t pattern[] = {0x01,0x0f,0xf0,0x02,0x00,0x80};
-    for(int i = 0; i < 6; i++) {
+    //寶可夢逃跑會有的訊息
+    //但結尾都是 01 00
+    //不肯定(有時候會有多組一樣的內容重複在封包裡)
+    const uint8_t pattern[] = {0x01,0x00};
+    if (len < 2) {
+        ESP_LOGE(GATTS_TABLE_TAG,"not pokemon escape LENERR");
+        return false;
+    }
+    for(int i = 0; i < 2; i++) {
         ESP_LOGE(GATTS_TABLE_TAG,"+!%d",value[i]);
         if(value[len-i]!=pattern[i])
         {
-            ESP_LOGE(GATTS_TABLE_TAG,"not pokemon escape");
+            // ESP_LOGE(GATTS_TABLE_TAG,"not pokemon escape");//for debug
             return false;
         }
     }
@@ -757,7 +763,7 @@ bool pokeBagFull(const uint8_t *value, uint16_t len)
         ESP_LOGE(GATTS_TABLE_TAG,"+!%d",value[i]);
         if(value[i]!=pattern[i])
         {
-            ESP_LOGE(GATTS_TABLE_TAG,"not pokemon bag full");
+            // ESP_LOGE(GATTS_TABLE_TAG,"not pokemon bag full");//for debug
             return false;
         }
     }
@@ -774,7 +780,7 @@ bool pokeItemFull(const uint8_t *value, uint16_t len)
         ESP_LOGE(GATTS_TABLE_TAG,"+!%d",value[i]);
         if(value[i]!=pattern[i])
         {
-            ESP_LOGE(GATTS_TABLE_TAG,"not pokemon item full");
+            // ESP_LOGE(GATTS_TABLE_TAG,"not pokemon item full");//for debug
             return false;
         }
     }
@@ -829,6 +835,10 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
 			ESP_LOGI(GATTS_TABLE_TAG, "DATA SENT TO APP");
 			esp_log_buffer_hex(GATTS_TABLE_TAG, cert_buffer, 52);
 		}
+        else if(cert_state == 6)
+        {
+            idle = false;
+        }
 		break;
         case ESP_GATTS_WRITE_EVT:
 		ESP_LOGI(GATTS_TABLE_TAG, "ESP_GATTS_WRITE_EVT: %s", char_name_from_handle(param->write.handle));
@@ -1069,7 +1079,7 @@ void display_on(SSD1306_t *dev, int page, char *text, int text_len, bool invert,
 
     uint8_t seg = 0;
 
-    // 根据对齐方式计算起始位置
+    // 根据對齊方式計算起始位置
     switch (align) {
         case ALIGN_CENTER:
             seg = (128 - (_text_len * 8)) / 2;
@@ -1140,7 +1150,13 @@ ssd1306_clear_screen(&dev, false);
 		ssd1306_display_text(&dev, 0, "NOTHING is EVERYTHING", 21, false);
 #endif // CONFIG_SSD1306_128x32
 	while(1) {
-
+        while(idle) {
+            display_on(&dev, 7, "Wait for connect",16, false, ALIGN_RIGHT);
+            vTaskDelay(1000 / portTICK_PERIOD_MS);
+            ssd1306_clear_line(&dev, 7,false);
+            vTaskDelay(1000 / portTICK_PERIOD_MS);
+        }
+        ssd1306_clear_line(&dev, 7,false);
 
 	    // 把變數和字串組合成狀態訊息
 	    char catchMSG[20];  // 确保这个数组足够大以容纳字符和数字
@@ -1163,18 +1179,18 @@ ssd1306_clear_screen(&dev, false);
 		vTaskDelay(3000 / portTICK_PERIOD_MS);
 
         //向右滾動效果
-		for(int i=0;i<128;i++) {
-			ssd1306_wrap_arround(&dev, SCROLL_RIGHT, 2, 5, 0);
-		}
+		// for(int i=0;i<128;i++) {
+		// 	ssd1306_wrap_arround(&dev, SCROLL_RIGHT, 2, 5, 0);
+		// }
         
 		if(fullItem)
 		{
             for(int i=3;i>=0;i--)
             {
     			display_on(&dev, 7, " Item   Storage FULL",12, false, ALIGN_RIGHT);
-                vTaskDelay(2000 / portTICK_PERIOD_MS);
+                vTaskDelay(200 / portTICK_PERIOD_MS);
                 ssd1306_clear_line(&dev, 7,false);
-                vTaskDelay(2000 / portTICK_PERIOD_MS);
+                vTaskDelay(200 / portTICK_PERIOD_MS);
             }
 		}
         else
@@ -1186,9 +1202,9 @@ ssd1306_clear_screen(&dev, false);
             for(int i=3;i>=0;i--)
             {
     			display_on(&dev, 6, "Pokemon Storage FULL",20, false, ALIGN_RIGHT);
-                vTaskDelay(2000 / portTICK_PERIOD_MS);
+                vTaskDelay(200 / portTICK_PERIOD_MS);
                 ssd1306_clear_line(&dev, 6,false);
-                vTaskDelay(2000 / portTICK_PERIOD_MS);
+                vTaskDelay(200 / portTICK_PERIOD_MS);
             }
         }
 		else
