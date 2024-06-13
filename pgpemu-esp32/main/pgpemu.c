@@ -5,6 +5,8 @@
 #include "driver/uart.h"
 #include "esp32/aes.h"
 //LCD3306 use
+#include <buzzer.h>
+
 #include <string.h>
 #include "ssd1306.h"
 #include "font8x8_basic.h"
@@ -1149,12 +1151,20 @@ ssd1306_clear_screen(&dev, false);
 #if CONFIG_SSD1306_128x32
 		ssd1306_display_text(&dev, 0, "NOTHING is EVERYTHING", 21, false);
 #endif // CONFIG_SSD1306_128x32
+//上一次包包和寶可夢是否滿了
 	while(1) {
         while(idle) {
+            //向右滾動效果
             display_on(&dev, 7, "Wait for connect",16, false, ALIGN_RIGHT);
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
+            for(int i=0;i<128;i++) {
+            	ssd1306_wrap_arround(&dev, SCROLL_RIGHT, 2, 5, 0);
+            }
+            //blink
             ssd1306_clear_line(&dev, 7,false);
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
+            vTaskDelay(900 / portTICK_PERIOD_MS);
+            display_on(&dev, 7, "Wait for connect",16, false, ALIGN_RIGHT);
+            vTaskDelay(900 / portTICK_PERIOD_MS);
+            
         }
         ssd1306_clear_line(&dev, 7,false);
 
@@ -1164,7 +1174,7 @@ ssd1306_clear_screen(&dev, false);
 	    char pokeStophMSG[20];
 	    snprintf(pokeStophMSG, sizeof(pokeStophMSG), "pokeStop%4d" ,pokemonStop);
 	    char escapeMSG[20];
-	    snprintf(escapeMSG, sizeof(escapeMSG), "  escape %4d" ,escape);
+	    snprintf(escapeMSG, sizeof(escapeMSG), "  escape%4d" ,escape);
 
         //顯示狀態
 	    text_align_t align = ALIGN_RIGHT;
@@ -1178,10 +1188,7 @@ ssd1306_clear_screen(&dev, false);
 		ssd1306_bitmaps(&dev, xpos, ypos, pokemonBallImg, 16, 16, false);
 		vTaskDelay(3000 / portTICK_PERIOD_MS);
 
-        //向右滾動效果
-		// for(int i=0;i<128;i++) {
-		// 	ssd1306_wrap_arround(&dev, SCROLL_RIGHT, 2, 5, 0);
-		// }
+
         
 		if(fullItem)
 		{
@@ -1190,8 +1197,9 @@ ssd1306_clear_screen(&dev, false);
     			display_on(&dev, 7, " Item   Storage FULL",12, false, ALIGN_RIGHT);
                 vTaskDelay(200 / portTICK_PERIOD_MS);
                 ssd1306_clear_line(&dev, 7,false);
-                vTaskDelay(200 / portTICK_PERIOD_MS);
+                vTaskDelay(900 / portTICK_PERIOD_MS);
             }
+            fullItemAlert();
 		}
         else
         {ssd1306_clear_line(&dev, 7,false);}
@@ -1204,15 +1212,16 @@ ssd1306_clear_screen(&dev, false);
     			display_on(&dev, 6, "Pokemon Storage FULL",20, false, ALIGN_RIGHT);
                 vTaskDelay(200 / portTICK_PERIOD_MS);
                 ssd1306_clear_line(&dev, 6,false);
-                vTaskDelay(200 / portTICK_PERIOD_MS);
+                vTaskDelay(900 / portTICK_PERIOD_MS);
+                fullpokeAlert();
             }
+
         }
 		else
 		{ssd1306_clear_line(&dev, 6,false);}
 		vTaskDelay(2000 / portTICK_PERIOD_MS);
 }
 }
-
 static void auto_button_task(void *pvParameters)
 {
         ESP_LOGI("BUTTON", "[button task start]");
