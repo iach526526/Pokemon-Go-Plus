@@ -737,19 +737,33 @@ bool get_pokemon(const uint8_t *value, uint16_t len)
 bool pokemonEscape(const uint8_t *value, uint16_t len)
 {
     //寶可夢逃跑會有的訊息
-    //但結尾都是 01 00
-    //不肯定(有時候會有多組一樣的內容重複在封包裡)
+    // for(int i=0;i<len;i++)
+    // {
+    //     ESP_LOGE(GATTS_TABLE_TAG,"+ECPLOG%d",value[i]);
+    // }
     const uint8_t pattern[] = {0x01,0x00};
-    if (len < 2) {
-        ESP_LOGE(GATTS_TABLE_TAG,"not pokemon escape LENERR");
-        return false;
+    const uint8_t pattern2[] = {0x00,0x00,0x00,0x01,0x0a,0x00,0x00};
+    if(len==2)
+    {
+        for(int i = 0; i < 2; i++) {
+            ESP_LOGE(GATTS_TABLE_TAG,"+!%d",value[len-i-1]);
+            if(value[len-i-1]!=pattern[len-i-1])
+            {
+                ESP_LOGE(GATTS_TABLE_TAG,"not pokemon escape");//for debug
+                return false;
+            }
+        }
+
     }
-    for(int i = 0; i < 2; i++) {
-        ESP_LOGE(GATTS_TABLE_TAG,"+!%d",value[i]);
-        if(value[len-i]!=pattern[i])
-        {
-            // ESP_LOGE(GATTS_TABLE_TAG,"not pokemon escape");//for debug
-            return false;
+    else
+    {
+        for(int i = 0; i < 7; i++) {
+            ESP_LOGE(GATTS_TABLE_TAG,"+!%d",value[i]);
+            if(value[i]!=pattern2[i])
+            {
+                ESP_LOGE(GATTS_TABLE_TAG,"not pokemon escape");//for debug
+                return false;
+            }
         }
     }
     escape++;
@@ -1160,10 +1174,15 @@ ssd1306_clear_screen(&dev, false);
             	ssd1306_wrap_arround(&dev, SCROLL_RIGHT, 2, 5, 0);
             }
             //blink
-            ssd1306_clear_line(&dev, 7,false);
-            vTaskDelay(900 / portTICK_PERIOD_MS);
-            display_on(&dev, 7, "Wait for connect",16, false, ALIGN_RIGHT);
-            vTaskDelay(900 / portTICK_PERIOD_MS);
+            int i;
+            for(i=0;i<5;i++)
+            {
+                ssd1306_clear_line(&dev, 7,false);
+                vTaskDelay(500 / portTICK_PERIOD_MS);
+                display_on(&dev, 7, "Wait for connect",16, false, ALIGN_RIGHT);
+                vTaskDelay(500 / portTICK_PERIOD_MS);
+                
+            }
             
         }
         ssd1306_clear_line(&dev, 7,false);
@@ -1194,12 +1213,11 @@ ssd1306_clear_screen(&dev, false);
 		{
             for(int i=3;i>=0;i--)
             {
-    			display_on(&dev, 7, " Item   Storage FULL",12, false, ALIGN_RIGHT);
-                vTaskDelay(200 / portTICK_PERIOD_MS);
+    			display_on(&dev, 7, "Item FULL",9, false, ALIGN_LEFT);
+                vTaskDelay(1000 / portTICK_PERIOD_MS);
                 ssd1306_clear_line(&dev, 7,false);
-                vTaskDelay(900 / portTICK_PERIOD_MS);
+                fullItemAlert();
             }
-            fullItemAlert();
 		}
         else
         {ssd1306_clear_line(&dev, 7,false);}
@@ -1209,10 +1227,9 @@ ssd1306_clear_screen(&dev, false);
         {
             for(int i=3;i>=0;i--)
             {
-    			display_on(&dev, 6, "Pokemon Storage FULL",20, false, ALIGN_RIGHT);
-                vTaskDelay(200 / portTICK_PERIOD_MS);
+    			display_on(&dev, 6, "Pokemon FULL",11, false, ALIGN_LEFT);
+                vTaskDelay(1000 / portTICK_PERIOD_MS);
                 ssd1306_clear_line(&dev, 6,false);
-                vTaskDelay(900 / portTICK_PERIOD_MS);
                 fullpokeAlert();
             }
 
