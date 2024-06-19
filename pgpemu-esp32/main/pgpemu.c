@@ -374,6 +374,10 @@ static void generate_first_challenge()
 		    (struct challenge_data *)cert_buffer);
 }
 int idle = false;
+//捕捉狀態變數
+//counter for OLED display
+int catchPokemon=0,pokemonStop =0,escape=0;
+bool fullItem=false,fullPokemon=false;
 static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param)
 {
     switch (event) {
@@ -395,6 +399,8 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
                 ESP_LOGE(GATTS_TABLE_TAG, "advertising start failed");
             }else{
                 idle=true; // 閒置狀態，LED 顯示等待連接
+                catchPokemon=0;pokemonStop =0;escape=0;
+                fullItem=false;fullPokemon=false;
                 ESP_LOGI(GATTS_TABLE_TAG, "advertising start successfully");
             }
             break;
@@ -654,10 +660,7 @@ void pgp_exec_write_event_env(esp_gatt_if_t gatts_if, prepare_type_env_t *prepar
     }
     prepare_write_env->prepare_len = 0;
 }
-//捕捉狀態變數
-//counter for OLED display
-int catchPokemon=0,pokemonStop =0,escape=0;
-bool fullItem=false,fullPokemon=false;
+
 
 bool is_pokeStop(const uint8_t *value, uint16_t len) {
     //偵測到 pokemon stop 會有的訊息
@@ -682,7 +685,7 @@ bool is_pokeStop(const uint8_t *value, uint16_t len) {
     return true;
 
 }
-bool is_pokemono(const uint8_t *value, uint16_t len) {
+bool is_pokemon(const uint8_t *value, uint16_t len) {
     //偵測到 pokemon 會有的特徵訊息
     /*
         偵測到寶可夢的訊息
@@ -742,30 +745,16 @@ bool pokemonEscape(const uint8_t *value, uint16_t len)
     //     ESP_LOGE(GATTS_TABLE_TAG,"+ECPLOG%d",value[i]);
     // }
     const uint8_t pattern[] = {0x01,0x00};
-    const uint8_t pattern2[] = {0x00,0x00,0x00,0x01,0x0a,0x00,0x00};
-    if(len==2)
-    {
-        for(int i = 0; i < 2; i++) {
-            ESP_LOGE(GATTS_TABLE_TAG,"+!%d",value[len-i-1]);
-            if(value[len-i-1]!=pattern[len-i-1])
-            {
-                ESP_LOGE(GATTS_TABLE_TAG,"not pokemon escape");//for debug
-                return false;
-            }
+    for(int i = 0; i < 2; i++) {
+        ESP_LOGE(GATTS_TABLE_TAG,"+!%d",value[len-i-1]);
+        if(value[len-i-1]!=pattern[len-i-1])
+        {
+            ESP_LOGE(GATTS_TABLE_TAG,"not pokemon escape");//for debug
+            return false;
         }
+    }
 
-    }
-    else
-    {
-        for(int i = 0; i < 7; i++) {
-            ESP_LOGE(GATTS_TABLE_TAG,"+!%d",value[i]);
-            if(value[i]!=pattern2[i])
-            {
-                ESP_LOGE(GATTS_TABLE_TAG,"not pokemon escape");//for debug
-                return false;
-            }
-        }
-    }
+    
     escape++;
     return true;
 
@@ -868,7 +857,7 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
                 ESP_LOGI(GATTS_TABLE_TAG, "sttttttep");
                 detectpokemon = false;
             }
-            else if(is_pokemono(param->write.value, param->write.len))
+            else if(is_pokemon(param->write.value, param->write.len))
             {
                 ESP_LOGI(GATTS_TABLE_TAG, "i see a pokemon");
                 detectpokemon = true;
