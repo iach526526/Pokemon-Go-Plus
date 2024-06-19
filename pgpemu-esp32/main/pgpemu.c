@@ -696,11 +696,9 @@ bool is_pokemon(const uint8_t *value, uint16_t len) {
     */
     const uint8_t pattern[] = {0x00, 0x00, 0x00, 0x0f, 0x10, 0xf0, 0xf0, 0x08, 0x00, 0x00, 0x10, 0xf0, 0xf0, 0x08, 0x00, 0x00,0x10, 0xf0, 0xf0, 0x08, 0x00, 0x00, 0x10, 0xf0, 0xf0, 0x08, 0x00, 0x00, 0x10, 0xf0, 0xf0, 0x08,0x00, 0x00, 0x10, 0xf0};
     if (len < 49) {
-        ESP_LOGE(GATTS_TABLE_TAG,"is not pokemon ...LENERR");
         return false;
     }
     for(int i = 0; i < 36; i++) {
-        ESP_LOGE(GATTS_TABLE_TAG,"+!%d",value[i]);
         if(value[i]!=pattern[i])
         {
             // ESP_LOGE(GATTS_TABLE_TAG,"not pokemon");//for debug
@@ -740,14 +738,15 @@ bool get_pokemon(const uint8_t *value, uint16_t len)
 bool pokemonEscape(const uint8_t *value, uint16_t len)
 {
     //寶可夢逃跑會有的訊息
+    //0f f0 02 00 80
     // for(int i=0;i<len;i++)
     // {
     //     ESP_LOGE(GATTS_TABLE_TAG,"+ECPLOG%d",value[i]);
     // }
-    const uint8_t pattern[] = {0x01,0x00};
-    for(int i = 0; i < 2; i++) {
+    const uint8_t pattern[] = {0x0f,0xf0,0x02,0x00,0x80};
+    for(int i = 0; i < 5; i++) {
         ESP_LOGE(GATTS_TABLE_TAG,"+!%d",value[len-i-1]);
-        if(value[len-i-1]!=pattern[len-i-1])
+        if(value[len-i-1]!=pattern[4-i])
         {
             ESP_LOGE(GATTS_TABLE_TAG,"not pokemon escape");//for debug
             return false;
@@ -765,7 +764,6 @@ bool pokeBagFull(const uint8_t *value, uint16_t len)
     //00 00 00 01 18 0f f0
     const uint8_t pattern[] = {0x00,0x00,0x00,0x01,0x18,0x0f,0xf0};
     for(int i = 0; i < 7; i++) {
-        ESP_LOGE(GATTS_TABLE_TAG,"+!%d",value[i]);
         if(value[i]!=pattern[i])
         {
             // ESP_LOGE(GATTS_TABLE_TAG,"not pokemon bag full");//for debug
@@ -782,7 +780,6 @@ bool pokeItemFull(const uint8_t *value, uint16_t len)
     //00 00 00 01 10 ff ff
     const uint8_t pattern[] = {0x00,0x00,0x00,0x01,0x10,0xff,0xff};
     for(int i = 0; i < 7; i++) {
-        ESP_LOGE(GATTS_TABLE_TAG,"+!%d",value[i]);
         if(value[i]!=pattern[i])
         {
             // ESP_LOGE(GATTS_TABLE_TAG,"not pokemon item full");//for debug
@@ -862,15 +859,15 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
                 ESP_LOGI(GATTS_TABLE_TAG, "i see a pokemon");
                 detectpokemon = true;
             }
-            else if (detectpokemon&& pokemonEscape(param->write.value, param->write.len)) {
-                ESP_LOGI(GATTS_TABLE_TAG, "pokemon escape");
-                detectpokemon = false;
-            }
             else if (detectpokemon && get_pokemon(param->write.value, param->write.len)) {
                 ESP_LOGI(GATTS_TABLE_TAG, "get pokemon");
                 detectpokemon = false;
             }
-            else if (detectpokemon && pokeBagFull(param->write.value, param->write.len)) {
+            else if (detectpokemon&& pokemonEscape(param->write.value, param->write.len)) {
+                ESP_LOGI(GATTS_TABLE_TAG, "pokemon escape");
+                detectpokemon = false;
+            }
+            else if (pokeBagFull(param->write.value, param->write.len)) {
                 ESP_LOGI(GATTS_TABLE_TAG, "pokemon bag full");
                 detectpokemon = false;
             }
